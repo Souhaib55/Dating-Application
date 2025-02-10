@@ -1,0 +1,16 @@
+<h4>Internal Server Error</h4>
+@if (error) {
+    <h5 class = "text-danger">Error : {{error.massage}}</h5>
+    <p class = "font-weight-bold">Note ! If you see this error then angular is not to blame ! </p>
+    <p>What to do next ?</p>
+    <ol>
+        <li>Open Chrome dev tool and check the filing request in the network tab</li>
+        <li>Examine the URL of the failing request</li>
+        <li>Reproducer the error in postman - If you can reproduce the error then angular is not to balme ! </li>
+    </ol>
+    <p class="font-weight-bold"> Following is the stack trace - check the first 2 line tells you exactly which line of code causes the problem !</p>
+    <code class="mt-5" style="background-color: aliceblue;">
+        {{error.details}}
+    </code>
+
+}
