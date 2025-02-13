@@ -1,36 +1,66 @@
-using API.Data;
+using API.Dtos;
 using API.Entities;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore; // Ensure this is included for ToListAsync()/FindAsync()
+using Microsoft.EntityFrameworkCore; 
 
 namespace API.Controllers;
 
+[Route("api/users")]
 [Authorize]
-
-public class UsersController : BaseApiController
+public class UserController : BaseApiController
 {
-    private readonly DataContext _context;
-    
-    public UsersController(DataContext context)
+    private readonly IUserRepository userRepository;
+
+    public UserController(IUserRepository userRepository)
     {
-        _context = context;
-    }
-    
-    [AllowAnonymous]
-    [HttpGet]
-    public ActionResult<IEnumerable<AppUser>> GetUsers()
-    {
-        var users = _context.Users.ToList();
-        return users; 
+        this.userRepository = userRepository;
     }
 
-    [Authorize]
-    [HttpGet("{id}")]
-    public ActionResult<AppUser> GetUser(int id)
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
     {
-        var user = _context.Users.Find(id);
+        var users = await userRepository.GetMembersAsync();
+
+        return Ok(users);
+    }
+
+    [HttpGet("{username}")]
+    public async Task<ActionResult<MemberDto>> GetUser(string username)
+    {
+        var user = await userRepository.GetMemberAsync(username);
+
         if (user == null) return NotFound();
-        return user; // Implicit OkResult wrapping
+
+        return user;
     }
 }
+
+
+/*
+
+[Authorize]
+
+public class UserController(IUserRepository userRepository) : BaseApiController
+{
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
+    {
+        var users = await userRepository.GetUsersAsync();
+        return Ok(users);
+    }
+
+    [HttpGet("{username}")]
+    public async Task<ActionResult<AppUser>> GetUser(string username)
+    {
+        var user = await userRepository.GetUserByUsernameAsync(username);
+
+        if (user == null) return NotFound();
+
+        return user;
+    }
+
+
+}*/
