@@ -1,3 +1,15 @@
 .dropdown-toggle , .dropdown-item {
     cursor : pointer;
 }
+
+img {
+    max-height: 65px;
+    max-width : 65px;
+    border-radius : 50%;
+    object-fit: cover;
+    border : 3px solid #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Optional: Soft shadow for a lifted effect */
+    display : inline;
+         
+}
+

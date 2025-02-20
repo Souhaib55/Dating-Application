@@ -102,7 +102,10 @@
                 </tab>
 
                 <tab heading="Edit Photos">
-                    <p>Photo editing section will go here.</p>
+                    <app-photo-editor
+                        [member]="member"
+                        (memberChange)="onMemberChange($event)"
+                    ></app-photo-editor>
                 </tab>
             </tabset>
         </div>

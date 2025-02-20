@@ -1,8 +1,8 @@
-using API.Entities ;
+﻿using API.Entities;
 
-//namespace Api.Services ;
+namespace API;
 
 public interface ITokenService
 {
-    string CreateToken(AppUser user);
+    string CreateToken(AppUser user); // Changed from Task<string> to string
 }

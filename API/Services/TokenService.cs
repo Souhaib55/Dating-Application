@@ -1,54 +1,44 @@
-using API.Entities;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿// TokenService.cs
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using API.Entities;
+using Microsoft.IdentityModel.Tokens;
 
-namespace API.Services
+namespace API;
+
+public class TokenService(IConfiguration config) : ITokenService
 {
-    public class TokenService : ITokenService
+    public string CreateToken(AppUser user)
     {
-        private readonly IConfiguration _config;
+        var tokenKey = config["TokenKey"] ?? throw new Exception("Cannot access tokenKey from appsettings");
+        if (tokenKey.Length < 64) throw new Exception("Your tokenKey needs to be longer");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
 
-        // Constructor Injection for IConfiguration
-        public TokenService(IConfiguration config)
+        var claims = new List<Claim>
         {
-            _config = config;
-        }
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.UserName)
+            // Add other claims as needed from your custom user system
+        };
 
-        public string CreateToken(AppUser user)
+        // If you need roles, get them from your custom system
+        // claims.Add(new Claim(ClaimTypes.Role, "YourRole"));
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
         {
-            // Access the token key from appsettings.json
-            var tokenKey = _config["TokenKey"] ?? throw new Exception("Cannot access TokenKey from appsettings.json");
-            if (tokenKey.Length < 64) throw new Exception("You Token key needs to be longer");
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddDays(7),
+            SigningCredentials = creds
+        };
 
-            // Create a symmetric security key using the token key
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            // Define claims (information about the user)
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.NameId, user.UserName ?? "UnknownUser")
-            };
-
-            // Create signing credentials with the security key and HMAC-SHA512 algorithm
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            // Define the security token descriptor
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(7), // Token expiration set to 7 days
-                SigningCredentials = creds
-            };
-
-            // Generate the token using JwtSecurityTokenHandler
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            // Return the generated JWT token as a string
-            return tokenHandler.WriteToken(token);
-        }
+        return tokenHandler.WriteToken(token);
     }
+
+   
 }
